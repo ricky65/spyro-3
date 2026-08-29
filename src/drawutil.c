@@ -115,7 +115,23 @@ INCLUDE_ASM_REORDER_HACK("asm/nonmatchings/drawutil", func_80020168);
  */
 INCLUDE_ASM_REORDER_HACK("asm/nonmatchings/drawutil", func_800202DC);
 
-INCLUDE_ASM_REORDER_HACK("asm/nonmatchings/drawutil", func_80020344);
+/**
+ * DrawStringCenteredBoxed() - func_80020344() - MATCHING
+ * https://decomp.me/scratch/cmcS7
+ */
+void func_80020344(char* arg0, int arg1, int arg2, int arg3)
+{
+    int halfWidth = func_8002EBB0(arg0) >> 1;
+
+    func_8001FE48(
+        arg1 - halfWidth - 8,
+        arg1 + halfWidth + 8,
+        arg2 - 2,
+        arg2 + 11
+    );
+
+    func_800202DC(arg0, arg1, arg2, arg3);
+}
 
 /**
  * DrawStringRightAligned() - func_800203C4() - MATCHING
