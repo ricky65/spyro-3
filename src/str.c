@@ -2,8 +2,8 @@
 #include "ovl_header.h"
 
 // externs
-extern int func_8005D96C(int,int,unsigned int);
-extern int func_8005E0BC(unsigned char, CdLoc*, char*); // unclear type
+extern int func_8005D96C(int,void*,unsigned int); // probably equivalent to CdRead from Spyro 1
+extern int func_8005E0BC(unsigned char, CdLoc*, char*); // probably equivalent to CdControl from Spyro 1
 
 // sdata
 extern int speechLba; // 8006C3F4 - should be 90000
@@ -11,7 +11,8 @@ extern int D_8006C674; // 8006C674 - moby speech index to play (entry in speech 
 extern int language; // 8006C76C
 
 // bss
-extern StreamingData streamingData; // 8006e470
+extern CDState cdState; // 8006e470
+extern StreamingData streamingData; // 8006e470 - would be 8006e48c if CDState and StreamingData are split
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -85,14 +86,54 @@ void func_8004F9C0(int startLba, int endLba, int track) {
 INCLUDE_ASM("asm/nonmatchings/str", func_8004FA24);
 
 /**
- * ???() - func_800503F8()
- * TODO
+ * ???() - func_800503F8() - MATCHING
+ * Looks equivalent to CDLoadTime in Spyro 1
+ * https://decomp.me/scratch/jQNst
  */
-INCLUDE_ASM("asm/nonmatchings/str", func_800503F8);
+int func_800503F8(void) {
+    unsigned char modeFlags;
+    int CdlComplete;
+
+    if (streamingData.dat_8006e48c != 0) {
+        streamingData.musicEnabled = 1;
+        func_8004FA24();
+        return 1;
+    } 
+    
+    if (cdState.isReading != 0) {
+        if (cdState.readTime < cdState.maxReadTime) {
+            return 1;
+        }
+
+        modeFlags = 0x80;
+        func_8005DB1C();
+        
+        // Set the mode to double speed?
+        func_8005E0BC(0xE, &modeFlags, 0);
+        func_8005DB08(&func_80050504);
+
+        // Wait for the CD subsystem to be ready after the reinitialization
+        CdlComplete = 2;
+        while (func_8005E074(1, 0) != CdlComplete) {
+        }
+
+        func_8005E0BC(2, (void *) &cdState.readLoc, 0);
+
+        cdState.readTime = 0; // Reset the disc read time
+        
+        // Start the read
+        func_8005D96C(cdState.size, cdState.outBuf, 0x80);
+
+        return 1;
+    }
+
+    return func_8005E074(1, 0) != 2;
+}
 
 /**
  * ???() - func_80050504() - TECHNICALLY MATCHING
  * Some delay slot bullshit was resolved using an empty asm call, this will need correction later
+ * Looks equivalent to CDReadDone from Spyro 1
  * https://decomp.me/scratch/Dt2wl
  */
 void func_80050504(unsigned char arg0) {
@@ -112,6 +153,7 @@ void func_80050504(unsigned char arg0) {
  * ???() - func_80050578()
  * Awful, but probably like func_80016500 from S1
  * S1 CD struct seems similar to the start of StreamingData too
+ * Looks equivalent to CDLoadSync from Spyro 1
  * https://decomp.me/scratch/75XlZ
  */
 INCLUDE_ASM("asm/nonmatchings/str", func_80050578);
@@ -119,6 +161,7 @@ INCLUDE_ASM("asm/nonmatchings/str", func_80050578);
 /**
  * ???() - func_80050680()
  * Probably difficult
+ * Looks equivalent to CDLoadAsync from Spyro 1
  * https://decomp.me/scratch/iHBib
  */
 INCLUDE_ASM("asm/nonmatchings/str", func_80050680);

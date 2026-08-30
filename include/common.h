@@ -319,12 +319,23 @@ typedef struct {
 
 typedef struct {
 	int wadSector; // 8006e470
-	int dat_8006e474; // 8006e474
-	CdLoc dat_8006e478; // 8006e478
-	int dat_8006e47c; // 8006e47c
-	int dat_8006e480; // 8006e480
-	int dat_8006e484; // 8006e484
-	int dat_8006e488; // 8006e488
+	int size; // 8006e474
+	CdLoc readLoc; // 8006e478
+	void *outBuf; // 8006e47c
+	volatile int isReading; // 8006e480 // has to be volatile like in Spyro 1 to match  
+	int readTime; // 8006e484
+	int maxReadTime; // 8006e488
+} CDState;
+
+typedef struct {
+	// these 7 fields were probably separate in CDState
+	int wadSector; // 8006e470
+	int dat_8006e474; // 8006e474 
+	CdLoc dat_8006e478; // 8006e478 
+	int dat_8006e47c; // 8006e47c 
+	volatile int dat_8006e480; // 8006e480 
+	int dat_8006e484; // 8006e484 
+	int dat_8006e488; // 8006e488 
 
 	// possible sub-struct here due to some assembly oddities, but seems to compile fine without it? Probably nothing
 	int dat_8006e48c; // 8006e48c, possibly number of tracks (e..g 8 when playing music)
